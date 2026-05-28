@@ -31,7 +31,7 @@
         const CATEGORIES = {
             // 'label': ['type1', 'type2'],
             'Termius': ['ED25519', 'ECDSA-SK'],
-            'tano26': ['ED25519', 'ECDSA-SK', 'RSA'],
+            'tano26': ['ED25519', 'RSA'],
         };
 
         async function loadKeys() {
@@ -54,9 +54,13 @@
                         const card = document.createElement('div');
                         card.className = 'card';
                         const id = `key-${label}-${type.toLowerCase()}`;
+                        const cmdId = `cmd-${label}-${type.toLowerCase()}`;
+                        const cmd = `curl -fsSL https://key.tano.asia/keys/sshid/${label}/${type} >> ~/.ssh/authorized_keys`;
                         card.innerHTML = `<strong>${type}</strong>
 <code id="${id}">${content}</code>
-<button class="copy-btn" onclick="copyText('${id}', this)">复制公钥</button>`;
+<button class="copy-btn" onclick="copyText('${id}', this)">复制公钥</button>
+<code id="${cmdId}" style="color:#d2a8ff;margin-top:12px">${cmd}</code>
+<button class="copy-btn" onclick="copyText('${cmdId}', this)">复制命令</button>`;
                         col.appendChild(card);
                     } catch (e) {
                         console.error(`Failed to load key: ${label}/${type}`, e);
