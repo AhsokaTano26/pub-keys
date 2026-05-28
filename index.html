@@ -5,13 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Public Key Hub</title>
     <style>
-        body { font-family: monospace; background: #0d1117; color: #c9d1d9; line-height: 1.6; padding: 40px; max-width: 1200px; margin: 0 auto; }
+        body { font-family: monospace; background: #0d1117; color: #c9d1d9; line-height: 1.6; padding: 40px; max-width: 1500px; margin: 0 auto; }
         h1 { color: #58a6ff; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
-        .columns { display: flex; gap: 20px; flex-wrap: wrap; }
-        .column { flex: 1; min-width: 280px; }
+        .columns { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+        @media (max-width: 1400px) { .columns { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 1100px) { .columns { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 800px) { .columns { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .columns { grid-template-columns: 1fr; } }
         .column h2 { font-size: 1.1em; color: #58a6ff; margin-bottom: 10px; }
         .card { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 20px; margin-top: 12px; }
         code { background: #000; color: #7ee787; padding: 4px 8px; border-radius: 4px; display: block; overflow-x: auto; margin: 10px 0; white-space: pre-wrap; word-break: break-all; }
+        code.key-display { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
         .copy-btn { cursor: pointer; background: #238636; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; }
         .copy-btn:hover { background: #2ea043; }
         .copy-btn.copied { background: #1f6feb; }
@@ -60,7 +64,7 @@
                         const cmdId = `cmd-${label}-${type.toLowerCase()}`;
                         const cmd = `curl -fsSL https://key.tano.asia/keys/sshid/${label}/${type} >> ~/.ssh/authorized_keys`;
                         card.innerHTML = `<strong>${type}</strong>
-<code id="${id}">${content}</code>
+<code id="${id}" class="key-display" data-full="${content.replace(/"/g, '&quot;')}">${content}</code>
 <button class="copy-btn" onclick="copyText('${id}', this)">复制公钥</button>
 <code id="${cmdId}" style="color:#d2a8ff;margin-top:12px">${cmd}</code>
 <button class="copy-btn" onclick="copyText('${cmdId}', this)">复制命令</button>`;
@@ -76,7 +80,8 @@
         }
 
         function copyText(id, btn) {
-            const text = document.getElementById(id).innerText;
+            const el = document.getElementById(id);
+            const text = el.dataset.full || el.innerText;
             navigator.clipboard.writeText(text).then(() => {
                 btn.textContent = '已复制!';
                 btn.classList.add('copied');
