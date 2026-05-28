@@ -25,26 +25,36 @@
     </div>
 
     <script>
+        const CATEGORIES = {
+            'termius': 'Termius',
+            // 'server': '服务器',
+            // 'work': '工作',
+            // 'personal': '个人',
+        };
         const KEY_TYPES = ['ED25519', 'ECDSA-SK'];
 
         async function loadKeys() {
             const container = document.getElementById('keys-container');
-            for (const type of KEY_TYPES) {
-                try {
-                    const res = await fetch(`keys/sshid/${type}`);
-                    if (!res.ok) continue;
-                    const content = (await res.text()).trim();
-                    if (!content) continue;
+            const entries = Object.entries(CATEGORIES);
 
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    const id = 'key-' + type.toLowerCase();
-                    card.innerHTML = `<strong>tano26 / ${type}</strong>
+            for (const [cat, label] of entries) {
+                for (const type of KEY_TYPES) {
+                    try {
+                        const res = await fetch(`keys/sshid/${cat}/${type}`);
+                        if (!res.ok) continue;
+                        const content = (await res.text()).trim();
+                        if (!content) continue;
+
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        const id = `key-${cat}-${type.toLowerCase()}`;
+                        card.innerHTML = `<strong>tano26 / ${label} / ${type}</strong>
 <code id="${id}">${content}</code>
 <button class="copy-btn" onclick="copyText('${id}', this)">复制公钥</button>`;
-                    container.appendChild(card);
-                } catch (e) {
-                    console.error(`Failed to load key: ${type}`, e);
+                        container.appendChild(card);
+                    } catch (e) {
+                        console.error(`Failed to load key: ${cat}/${type}`, e);
+                    }
                 }
             }
         }
