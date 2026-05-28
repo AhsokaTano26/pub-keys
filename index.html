@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Public Key Hub</title>
     <style>
-        body { font-family: monospace; background: #0d1117; color: #c9d1d9; line-height: 1.6; padding: 40px; max-width: 800px; margin: 0 auto; }
+        body { font-family: monospace; background: #0d1117; color: #c9d1d9; line-height: 1.6; padding: 40px; max-width: 1200px; margin: 0 auto; }
         h1 { color: #58a6ff; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
-        .card { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 20px; margin-top: 20px; }
+        .columns { display: flex; gap: 20px; flex-wrap: wrap; }
+        .column { flex: 1; min-width: 280px; }
+        .column h2 { font-size: 1.1em; color: #58a6ff; margin-bottom: 10px; }
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 20px; margin-top: 12px; }
         code { background: #000; color: #7ee787; padding: 4px 8px; border-radius: 4px; display: block; overflow-x: auto; margin: 10px 0; white-space: pre-wrap; word-break: break-all; }
         .copy-btn { cursor: pointer; background: #238636; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; }
         .copy-btn:hover { background: #2ea043; }
@@ -26,37 +29,43 @@
 
     <script>
         const CATEGORIES = {
-            'termius': 'Termius',
-             'tano26': 'tano26',
-            // 'work': '工作',
-            // 'personal': '个人',
+            // 'label': ['type1', 'type2'],
+            'Termius': ['ED25519', 'ECDSA-SK'],
+            'tano26': ['ED25519', 'ECDSA-SK', 'RSA'],
         };
-        const KEY_TYPES = ['ED25519', 'ECDSA-SK','rsa','ECDSA-SK','ECDSA'];
 
         async function loadKeys() {
             const container = document.getElementById('keys-container');
-            const entries = Object.entries(CATEGORIES);
+            const columns = document.createElement('div');
+            columns.className = 'columns';
 
-            for (const [cat, label] of entries) {
-                for (const type of KEY_TYPES) {
+            for (const [label, types] of Object.entries(CATEGORIES)) {
+                const col = document.createElement('div');
+                col.className = 'column';
+                col.innerHTML = `<h2>${label}</h2>`;
+
+                for (const type of types) {
                     try {
-                        const res = await fetch(`keys/sshid/${cat}/${type}`);
+                        const res = await fetch(`keys/sshid/${label}/${type}`);
                         if (!res.ok) continue;
                         const content = (await res.text()).trim();
                         if (!content) continue;
 
                         const card = document.createElement('div');
                         card.className = 'card';
-                        const id = `key-${cat}-${type.toLowerCase()}`;
-                        card.innerHTML = `<strong>tano26 / ${label} / ${type}</strong>
+                        const id = `key-${label}-${type.toLowerCase()}`;
+                        card.innerHTML = `<strong>${type}</strong>
 <code id="${id}">${content}</code>
 <button class="copy-btn" onclick="copyText('${id}', this)">复制公钥</button>`;
-                        container.appendChild(card);
+                        col.appendChild(card);
                     } catch (e) {
-                        console.error(`Failed to load key: ${cat}/${type}`, e);
+                        console.error(`Failed to load key: ${label}/${type}`, e);
                     }
                 }
+
+                if (col.childElementCount > 1) columns.appendChild(col);
             }
+            container.appendChild(columns);
         }
 
         function copyText(id, btn) {
